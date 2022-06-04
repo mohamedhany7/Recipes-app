@@ -14,6 +14,7 @@ class ViewController: UIViewController, UITextFieldDelegate,UITableViewDelegate,
     let app_key:String = "3c71f4ec5817e262c94c03100136eff3"
     var health_filter:String = ""
     var selectedRecipe: Recipes?
+    let health_filter_array = ["","&health=low-sugar","&health=keto-friendly","&health=vegan"]
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,30 +27,18 @@ class ViewController: UIViewController, UITextFieldDelegate,UITableViewDelegate,
     
     @IBAction func onClickAll(_ sender: UIButton) {
         resetButtons()
-        health_filter = ""
+        health_filter = health_filter_array[sender.tag]
         searchRecipes()
-        allBtn.isSelected = true
-    }
-    
-    @IBAction func onClickLowSugar(_ sender: UIButton) {
-        resetButtons()
-        health_filter = "&health=low-sugar"
-        searchRecipes()
-        lowSugarBtn.isSelected = true
-    }
-    
-    @IBAction func onClickKeto(_ sender: UIButton) {
-        resetButtons()
-        health_filter = "&health=keto-friendly"
-        searchRecipes()
-        ketoBtn.isSelected = true
-    }
-    
-    @IBAction func onClickVegan(_ sender: UIButton) {
-        resetButtons()
-        health_filter = "&health=vegan"
-        searchRecipes()
-        veganBtn.isSelected = true
+        switch sender.tag{
+        case 1:
+            lowSugarBtn.isSelected = true
+        case 2:
+            ketoBtn.isSelected = true
+        case 3:
+            veganBtn.isSelected = true
+        default:
+            allBtn.isSelected = true
+        }
     }
     
     func resetButtons(){
@@ -98,7 +87,10 @@ class ViewController: UIViewController, UITextFieldDelegate,UITableViewDelegate,
         let q = searchWord.replacingOccurrences(of: " ", with: "%20")
         recipesArr.removeAll()
         
-        URLSession.shared.dataTask(with: URL(string: "https://api.edamam.com/search?q=\(q)&app_id=\(app_id)&app_key=\(app_key)\(health_filter)")!, completionHandler: {data, response,error in
+        //https://api.edamam.com/search?q=chicken&app_id=b3c6ace0&app_key=3c71f4ec5817e262c94c03100136eff3
+        let url = URL(string: "https://api.edamam.com/search?q=\(q)&app_id=\(app_id)&app_key=\(app_key)\(health_filter)")
+        
+        URLSession.shared.dataTask(with:url!, completionHandler: {data, response,error in
             guard let data = data, error == nil  else{
                 return
             }
@@ -152,22 +144,4 @@ class ViewController: UIViewController, UITextFieldDelegate,UITableViewDelegate,
         let secVC: DetailsViewController = segue.destination as! DetailsViewController
             secVC.recipe = selectedRecipe
     }
-}
-
-struct RecipeResult: Codable{
-    let hits: [Recipes]
-    
-}
-
-struct Recipes: Codable{
-    let recipe: Recipe
-}
-
-struct Recipe: Codable{
-    let image: String
-    let label: String
-    let source: String
-    let healthLabels: [String]
-    let ingredientLines: [String]
-    let url: String
 }
